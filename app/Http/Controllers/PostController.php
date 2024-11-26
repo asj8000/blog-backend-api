@@ -12,9 +12,16 @@ class PostController extends Controller
         $this->middleware('auth:sanctum')->except(['index', 'show']);
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        $posts = Post::with(['user:id,name', 'comments'])->latest()->paginate(10);
+        $query = Post::with(['user:id,name', 'comments']);
+        
+        if ($request->search) {
+            $query->where('title', 'like', '%' . $request->search . '%')
+                  ->orWhere('content', 'like', '%' . $request->search . '%');
+        }
+        
+        $posts = $query->latest()->paginate(10);
         return response()->json($posts);
     }
 
